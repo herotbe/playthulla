@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Thulla — Logo Preview / Export</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@900&family=Cormorant+Garamond:wght@700&family=Manrope:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #0a0612; color: #f5e0d3; font-family: 'Manrope', sans-serif; padding: 40px; }
+  h1 { font-family: 'Cinzel', serif; color: #e8b85c; letter-spacing: 0.1em; }
+  h2 { color: #e8b85c; margin-top: 40px; font-weight: 500; font-size: 16px; letter-spacing: 0.15em; text-transform: uppercase; }
+  p { color: #c89bb0; font-size: 14px; max-width: 800px; }
+  .stage { background: rgba(255,255,255,0.04); border: 1px solid rgba(232,184,92,0.25); border-radius: 14px; padding: 24px; margin: 12px 0; display: inline-block; }
+  .row { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+  .light { background: #ffffff; }
+  .label { color: #888; font-size: 11px; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.1em; }
+  code { background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+</style>
+</head>
+<body>
+  <h1>THULLA — logo assets</h1>
+  <p>Right-click any image below → <strong>Save image as…</strong> to grab a PNG. Or take a screenshot at higher zoom (browser zoom 200%+) for higher resolution. The SVG sources are in <code>public/logo-wordmark.svg</code>, <code>public/logo-icon.svg</code>, and <code>public/favicon.svg</code>.</p>
+
+  <h2>Wordmark — for Instagram/Twitter banners, headers, marketing</h2>
+  <div class="stage"><img src="logo-wordmark.svg" width="800" alt="Thulla wordmark" /></div>
+  <div class="label">1200 × 600 · use for banners and headers</div>
+
+  <h2>Square icon — for profile pictures (Instagram, TikTok, Facebook avatar)</h2>
+  <div class="row">
+    <div>
+      <div class="stage"><img src="logo-icon.svg" width="320" alt="Thulla icon" /></div>
+      <div class="label">1024 × 1024 · square crop</div>
+    </div>
+    <div>
+      <div class="stage" style="border-radius: 50%; padding: 0; overflow: hidden;">
+        <img src="logo-icon.svg" width="240" alt="Thulla icon (circle preview)" />
+      </div>
+      <div class="label">circle crop preview</div>
+    </div>
+  </div>
+
+  <h2>Favicon — browser tab icon</h2>
+  <div class="row">
+    <div class="stage"><img src="favicon.svg" width="128" alt="Favicon large" /></div>
+    <div class="stage"><img src="favicon.svg" width="64" alt="Favicon medium" /></div>
+    <div class="stage"><img src="favicon.svg" width="32" alt="Favicon small" /></div>
+    <div class="stage"><img src="favicon.svg" width="16" alt="Favicon tiny" /></div>
+  </div>
+
+  <h2>How to export to PNG for socials</h2>
+  <p style="line-height: 1.7;">
+    1. Open this file by double-clicking <code>logo-preview.html</code> after you've cloned the repo.<br/>
+    2. Right-click the SVG image → <strong>Save image as…</strong> — most browsers will save as SVG. To get PNG:<br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;a) Use <a style="color:#e8b85c" href="https://cloudconvert.com/svg-to-png" target="_blank">cloudconvert.com/svg-to-png</a> — drop in the SVG, get a PNG out.<br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;b) Or open the SVG in your browser, zoom in to ~200%, and screenshot at high resolution.<br/>
+    3. For Instagram/TikTok profile pic: use the square icon (1024×1024). For banners: use the wordmark.<br/>
+    4. Once you have your domain (playthulla.vercel.app), this preview page will be at <code>playthulla.vercel.app/logo-preview.html</code> — bookmark for easy access.
+  </p>
+
+</body>
+</html>

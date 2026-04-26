@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4a1538"/>
+      <stop offset="1" stop-color="#1a0612"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.45" r="0.6">
+      <stop offset="0" stop-color="#e8b85c" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#e8b85c" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="goldText" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fde08c"/>
+      <stop offset="0.5" stop-color="#e8b85c"/>
+      <stop offset="1" stop-color="#a8782a"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff8e7"/>
+      <stop offset="1" stop-color="#f5dcc0"/>
+    </linearGradient>
+    <filter id="goldShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="6"/>
+      <feOffset dx="0" dy="6"/>
+      <feFlood flood-color="#000" flood-opacity="0.6"/>
+      <feComposite in2="SourceAlpha" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Optional solid bg: comment out next two lines for transparent bg -->
+  <rect width="1200" height="600" fill="url(#bgGrad)"/>
+  <rect width="1200" height="600" fill="url(#glow)"/>
+
+  <!-- Shockwave rings behind everything -->
+  <g opacity="0.15" stroke="#e8b85c" fill="none" stroke-width="2">
+    <circle cx="600" cy="300" r="260"/>
+    <circle cx="600" cy="300" r="320"/>
+    <circle cx="600" cy="300" r="380"/>
+  </g>
+
+  <!-- Slammed card (tilted behind text) -->
+  <g transform="translate(600 300) rotate(-14)">
+    <rect x="-130" y="-180" width="260" height="360" rx="18" ry="18"
+          fill="url(#cardGrad)" stroke="#8b5228" stroke-width="3"
+          opacity="0.92"/>
+    <text x="-105" y="-130" font-family="'Cinzel', 'Cormorant Garamond', Georgia, serif"
+          font-weight="900" font-size="50" fill="#1a1a1a">A</text>
+    <text x="-105" y="-78" font-family="serif" font-size="44" fill="#1a1a1a">♠</text>
+    <text x="0" y="36" font-family="serif" font-size="170" fill="#1a1a1a"
+          text-anchor="middle" dominant-baseline="middle">♠</text>
+    <text x="105" y="160" font-family="'Cinzel', 'Cormorant Garamond', Georgia, serif"
+          font-weight="900" font-size="50" fill="#1a1a1a"
+          text-anchor="end" transform="rotate(180 105 145)">A</text>
+    <text x="105" y="118" font-family="serif" font-size="44" fill="#1a1a1a"
+          text-anchor="end" transform="rotate(180 105 105)">♠</text>
+  </g>
+
+  <!-- Crack lines fanning out -->
+  <g stroke="#fde08c" stroke-width="2" opacity="0.55" stroke-linecap="round">
+    <line x1="600" y1="300" x2="200" y2="100"/>
+    <line x1="600" y1="300" x2="1000" y2="100"/>
+    <line x1="600" y1="300" x2="200" y2="500"/>
+    <line x1="600" y1="300" x2="1000" y2="500"/>
+    <line x1="600" y1="300" x2="120" y2="300"/>
+    <line x1="600" y1="300" x2="1080" y2="300"/>
+  </g>
+
+  <!-- THULLA wordmark -->
+  <text x="600" y="360" font-family="'Cinzel', 'Cormorant Garamond', Georgia, serif"
+        font-weight="900" font-size="180" letter-spacing="14"
+        text-anchor="middle" fill="url(#goldText)"
+        stroke="#3d0a1f" stroke-width="3"
+        filter="url(#goldShadow)">THULLA</text>
+
+  <!-- Tagline -->
+  <text x="600" y="430" font-family="'Manrope', system-ui, -apple-system, sans-serif"
+        font-style="italic" font-size="22" letter-spacing="6"
+        text-anchor="middle" fill="#f5e0d3" opacity="0.85">
+    throw down. or get thulla'd.
+  </text>
+</svg>

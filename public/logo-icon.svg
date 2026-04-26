@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5a1942"/>
+      <stop offset="1" stop-color="#1a0612"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.55">
+      <stop offset="0" stop-color="#e8b85c" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#e8b85c" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="cardGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff8e7"/>
+      <stop offset="1" stop-color="#f5dcc0"/>
+    </linearGradient>
+    <linearGradient id="goldT" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fde08c"/>
+      <stop offset="1" stop-color="#a8782a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded square background -->
+  <rect width="1024" height="1024" rx="220" ry="220" fill="url(#bgGrad)"/>
+  <rect width="1024" height="1024" rx="220" ry="220" fill="url(#glow)"/>
+
+  <!-- Shockwave rings -->
+  <g fill="none" stroke="#e8b85c" stroke-width="3" opacity="0.25">
+    <circle cx="512" cy="512" r="380"/>
+    <circle cx="512" cy="512" r="440"/>
+  </g>
+
+  <!-- Crack lines -->
+  <g stroke="#fde08c" stroke-width="4" opacity="0.45" stroke-linecap="round">
+    <line x1="512" y1="512" x2="160" y2="180"/>
+    <line x1="512" y1="512" x2="864" y2="180"/>
+    <line x1="512" y1="512" x2="160" y2="844"/>
+    <line x1="512" y1="512" x2="864" y2="844"/>
+  </g>
+
+  <!-- Slammed card -->
+  <g transform="translate(512 512) rotate(-12)">
+    <rect x="-220" y="-310" width="440" height="620" rx="38" ry="38"
+          fill="url(#cardGrad)" stroke="#8b5228" stroke-width="6"/>
+
+    <!-- Big T mark on card -->
+    <text x="0" y="60" font-family="'Cinzel', 'Cormorant Garamond', Georgia, serif"
+          font-weight="900" font-size="500" fill="url(#goldT)"
+          stroke="#3d0a1f" stroke-width="6"
+          text-anchor="middle" dominant-baseline="middle"
+          letter-spacing="0">T</text>
+
+    <!-- Spade marks in corners -->
+    <text x="-180" y="-220" font-family="serif" font-size="80" fill="#1a1a1a"
+          font-weight="700">♠</text>
+    <text x="180" y="280" font-family="serif" font-size="80" fill="#1a1a1a"
+          font-weight="700" text-anchor="end" transform="rotate(180 180 252)">♠</text>
+  </g>
+</svg>
