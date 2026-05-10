@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { initSync, teardownSync, saveGameResult, fetchLeaderboard } from './lib/supabaseSync'
+import { signInEmail, signUpEmail, signInGoogle, signInFacebook, signOut, supabaseEnabled } from './lib/supabase'
 
 const SUITS=[{sym:'♠'},{sym:'♥'},{sym:'♦'},{sym:'♣'}];
 const RANKS=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
@@ -105,7 +107,6 @@ const AI_RIVALS=[
   {name:'Phantom',avatar:'💎',trophies:85,isAI:true},
 ];
 const loadProfile=n=>{try{const a=JSON.parse(localStorage.getItem(PROFILE_KEY)||'{}');return a[n]||{coins:500,trophies:0};}catch{return{coins:500,trophies:0};}};
-const saveProfile=(n,p)=>{try{const a=JSON.parse(localStorage.getItem(PROFILE_KEY)||'{}');a[n]=p;localStorage.setItem(PROFILE_KEY,JSON.stringify(a));}catch{}};
 const loadLB=()=>{try{const d=JSON.parse(localStorage.getItem(LB_KEY)||'null');if(!d){localStorage.setItem(LB_KEY,JSON.stringify(AI_RIVALS));return[...AI_RIVALS];}return d;}catch{return[...AI_RIVALS];}};
 const upsertLB=(name,avatar,trophies)=>{try{const lb=loadLB();const idx=lb.findIndex(e=>e.name===name&&!e.isAI);if(idx>=0)lb[idx]={...lb[idx],trophies,avatar};else lb.push({name,avatar,trophies,isAI:false});lb.sort((a,b)=>b.trophies-a.trophies);localStorage.setItem(LB_KEY,JSON.stringify(lb));}catch{}};
 
@@ -277,7 +278,73 @@ function ChatBubble({message,playerIdx,avatars,side}){
 }
 
 // ── MAIN MENU ──
-function MainMenu({theme,setTheme,onPlayLocal,onPlayAI,onShowRules,onShowSettings,onCosmetics,onLeaderboard,coins,trophies,playerName}){
+// ── AUTH MODAL ──
+function AuthModal({onClose,onSignedIn}){
+  const[tab,setTab]=useState('signin');
+  const[email,setEmail]=useState('');
+  const[pass,setPass]=useState('');
+  const[name,setName]=useState('');
+  const[loading,setLoading]=useState(false);
+  const[err,setErr]=useState('');
+  const[msg,setMsg]=useState('');
+
+  const submit=async(e)=>{
+    e.preventDefault();setErr('');setMsg('');setLoading(true);
+    try{
+      if(tab==='signin'){
+        const{data,error}=await signInEmail(email,pass);
+        if(error)setErr(error.message);
+        else{onSignedIn(data.user);onClose();}
+      }else{
+        const{data,error}=await signUpEmail(email,pass,name||email.split('@')[0]);
+        if(error)setErr(error.message);
+        else setMsg('Check your email to confirm your account, then sign in.');
+      }
+    }catch(e){setErr(e.message);}
+    setLoading(false);
+  };
+
+  if(!supabaseEnabled)return(
+    <div onClick={onClose} className="fixed inset-0 flex items-center justify-center p-4 fade-in" style={{background:'rgba(0,0,0,.85)',zIndex:80}}>
+      <div onClick={e=>e.stopPropagation()} className="panel p-5 max-w-sm w-full text-center">
+        <div className="display gold font-bold text-xl mb-3">Sign In</div>
+        <div className="muted text-sm mb-4">Supabase isn't connected yet. Add your <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> to your <code>.env</code> file.</div>
+        <button onClick={onClose} className="btn-primary w-full">OK</button>
+      </div>
+    </div>
+  );
+
+  return(
+    <div onClick={onClose} className="fixed inset-0 flex items-center justify-center p-4 fade-in" style={{background:'rgba(0,0,0,.85)',zIndex:80}}>
+      <div onClick={e=>e.stopPropagation()} className="panel p-5 max-w-sm w-full">
+        <div className="flex justify-between items-center mb-4">
+          <div className="display gold font-bold text-xl">Account</div>
+          <button onClick={onClose} style={{fontSize:26,lineHeight:1,background:'none',border:'none',color:'var(--text-muted)',cursor:'pointer'}}>×</button>
+        </div>
+        {/* tab toggle */}
+        <div className="pillbar mb-4">
+          <button className={tab==='signin'?'active':''} onClick={()=>{setTab('signin');setErr('');setMsg('');}}>Sign In</button>
+          <button className={tab==='signup'?'active':''} onClick={()=>{setTab('signup');setErr('');setMsg('');}}>Sign Up</button>
+        </div>
+        <form onSubmit={submit} className="space-y-3">
+          {tab==='signup'&&<input className="w-full px-3 py-2 rounded-lg text-sm" style={{background:'rgba(255,255,255,.08)',border:'1px solid var(--panel-border)',color:'var(--text)'}} type="text" placeholder="Display name (optional)" value={name} onChange={e=>setName(e.target.value)}/>}
+          <input className="w-full px-3 py-2 rounded-lg text-sm" style={{background:'rgba(255,255,255,.08)',border:'1px solid var(--panel-border)',color:'var(--text)'}} type="email" placeholder="Email" required value={email} onChange={e=>setEmail(e.target.value)}/>
+          <input className="w-full px-3 py-2 rounded-lg text-sm" style={{background:'rgba(255,255,255,.08)',border:'1px solid var(--panel-border)',color:'var(--text)'}} type="password" placeholder="Password" required value={pass} onChange={e=>setPass(e.target.value)}/>
+          {err&&<div className="text-xs" style={{color:'var(--danger)'}}>{err}</div>}
+          {msg&&<div className="text-xs success">{msg}</div>}
+          <button type="submit" className="btn-primary w-full" disabled={loading}>{loading?'…':tab==='signin'?'Sign In':'Create Account'}</button>
+        </form>
+        <div className="flex items-center gap-2 my-3"><div style={{flex:1,height:1,background:'var(--panel-border)'}}/><span className="muted text-xs">or</span><div style={{flex:1,height:1,background:'var(--panel-border)'}}/></div>
+        <div className="flex flex-col gap-2">
+          <button onClick={()=>signInGoogle()} className="btn-secondary w-full flex items-center justify-center gap-2"><span>G</span> Continue with Google</button>
+          <button onClick={()=>signInFacebook()} className="btn-secondary w-full flex items-center justify-center gap-2"><span>f</span> Continue with Facebook</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MainMenu({theme,setTheme,onPlayLocal,onPlayAI,onShowRules,onShowSettings,onCosmetics,onLeaderboard,coins,trophies,playerName,onShowAuth,currentUser,onSignOut}){
   const [soon,setSoon]=useState(false);
   const floatCards=[{suit:'♠',rank:'A',red:false},{suit:'♥',rank:'K',red:true},{suit:'♦',rank:'Q',red:true},{suit:'♣',rank:'J',red:false},{suit:'♠',rank:'10',red:false},{suit:'♥',rank:'7',red:true}];
   return(
@@ -296,7 +363,13 @@ function MainMenu({theme,setTheme,onPlayLocal,onPlayAI,onShowRules,onShowSetting
           <span style={{fontSize:14}}>🏆</span>
           <span className="gold font-bold text-sm">{trophies}</span>
         </div>
-        <button onClick={onShowSettings} className="btn-secondary">⚙</button>
+        <div className="flex items-center gap-2">
+          {currentUser
+            ? <button onClick={onSignOut} className="btn-secondary" style={{fontSize:11,padding:'4px 8px'}}>☁️ Sign Out</button>
+            : <button onClick={onShowAuth} className="btn-secondary" style={{fontSize:11,padding:'4px 8px'}}>☁️ Sign In</button>
+          }
+          <button onClick={onShowSettings} className="btn-secondary">⚙</button>
+        </div>
       </div>
       {/* logo */}
       <div className="text-center mb-4" style={{zIndex:10,position:'relative'}}>
@@ -597,19 +670,22 @@ function GameOverView({winnersOrder,eliminated,hands,displayName,avatars,onPlayA
   const posColors=['#f0c674','#c0c0c0','#cd7f32','var(--danger)'];
 
   useEffect(()=>{
-    // Award coins + trophies to player 0 (human in AI mode) or skip for local
     const rank=finalOrder.indexOf(playerIdx);
     if(rank<0||playerName===null)return;
     const coins=COIN_REWARDS[Math.min(rank,3)]+PART_COINS;
     const tDelta=TROPHY_REWARDS[Math.min(rank,3)];
-    const prof=loadProfile(playerName);
-    const newCoins=prof.coins+coins;
-    const newTrophies=Math.max(0,prof.trophies+tDelta);
-    saveProfile(playerName,{coins:newCoins,trophies:newTrophies});
-    upsertLB(playerName,avatars[playerIdx],newTrophies);
-    setCoinCount(coins);setTrophyDelta(tDelta);
-    if(coins>0)setTimeout(playCoinSnd,400);
-    if(rank===0)setTimeout(playWinSnd,200);
+    (async()=>{
+      const {newTrophies}=await saveGameResult({
+        placement:rank+1,
+        coinsEarned:coins,
+        trophiesDelta:tDelta,
+        gameMode:'ai',
+      });
+      upsertLB(playerName,avatars[playerIdx],newTrophies);
+      setCoinCount(coins);setTrophyDelta(tDelta);
+      if(coins>0)setTimeout(playCoinSnd,400);
+      if(rank===0)setTimeout(playWinSnd,200);
+    })();
   },[]);
 
   return(
@@ -709,7 +785,10 @@ function CosmeticsScreen({onBack,coins}){
 
 // ── LEADERBOARD ──
 function LeaderboardScreen({onBack,playerName}){
-  const lb=loadLB().sort((a,b)=>b.trophies-a.trophies).slice(0,20);
+  const [lb,setLb]=useState([]);
+  useEffect(()=>{
+    fetchLeaderboard(AI_RIVALS).then(rows=>setLb(rows.slice(0,20)));
+  },[]);
   const medals=['🥇','🥈','🥉'];
   return(
     <div className="flex flex-col min-h-screen p-4 max-w-md mx-auto fade-in">
@@ -719,7 +798,7 @@ function LeaderboardScreen({onBack,playerName}){
         <div style={{width:60}}/>
       </div>
       <div className="panel p-3 mb-3 text-center">
-        <div className="text-xs muted">Local leaderboard · global rankings coming soon</div>
+        <div className="text-xs muted">{lb.length===0?'Loading…':'Global rankings'}</div>
       </div>
       <div className="flex flex-col gap-2 overflow-y-auto">
         {lb.map((entry,i)=>(
@@ -812,6 +891,24 @@ export default function ThullaApp(){
   // player 0 profile
   const [playerCoins,setPlayerCoins]=useState(()=>loadProfile('You').coins);
   const [playerTrophies,setPlayerTrophies]=useState(()=>loadProfile('You').trophies);
+  const [showAuth,setShowAuth]=useState(false);
+  const [authedUser,setAuthedUser]=useState(null);
+
+  useEffect(() => {
+    initSync((updatedProfile) => {
+      if (updatedProfile) {
+        if (updatedProfile.coins !== undefined) setPlayerCoins(updatedProfile.coins);
+        if (updatedProfile.trophies !== undefined) setPlayerTrophies(updatedProfile.trophies);
+      }
+    });
+    // track auth state
+    import('./lib/supabase').then(({supabase})=>{
+      if(!supabase)return;
+      supabase.auth.getUser().then(({data})=>setAuthedUser(data?.user??null));
+      supabase.auth.onAuthStateChange((_,session)=>setAuthedUser(session?.user??null));
+    });
+    return teardownSync;
+  }, []);
 
   useEffect(()=>{setSfxVol(sfx);},[sfx]);
   useEffect(()=>{setMusicVol(music);},[music]);
@@ -1073,7 +1170,7 @@ export default function ThullaApp(){
       `}</style>
 
       <div className={`thulla-bg${shake?' shake':''}`} style={themeVars}>
-        {phase==='menu'&&<MainMenu theme={theme} setTheme={setTheme} onPlayLocal={()=>{startLocalGame();setPhase('nameEntry');}} onPlayAI={()=>{startAIGame();setPhase('aiSetup');}} onShowRules={()=>setShowRules(true)} onShowSettings={()=>setShowSettings(true)} onCosmetics={()=>setPhase('cosmetics')} onLeaderboard={()=>setPhase('leaderboard')} coins={playerCoins} trophies={playerTrophies} playerName={playerName}/>}
+        {phase==='menu'&&<MainMenu theme={theme} setTheme={setTheme} onPlayLocal={()=>{startLocalGame();setPhase('nameEntry');}} onPlayAI={()=>{startAIGame();setPhase('aiSetup');}} onShowRules={()=>setShowRules(true)} onShowSettings={()=>setShowSettings(true)} onCosmetics={()=>setPhase('cosmetics')} onLeaderboard={()=>setPhase('leaderboard')} coins={playerCoins} trophies={playerTrophies} playerName={playerName} onShowAuth={()=>setShowAuth(true)} currentUser={authedUser} onSignOut={async()=>{await signOut();setAuthedUser(null);}}/>}
         {phase==='aiSetup'&&<AISetup difficulty={botDifficulty} setDifficulty={setBotDifficulty} names={names} avatars={avatars} setName={setName} onPickAvatar={i=>setShowAvatarPicker(i)} onBack={()=>setPhase('menu')} onStart={startGame}/>}
         {phase==='nameEntry'&&<NameEntry names={names} avatars={avatars} setName={setName} onPickAvatar={i=>setShowAvatarPicker(i)} onRandomize={randomizeNames} onBack={()=>setPhase('menu')} onStart={startGame}/>}
         {phase==='dealing'&&<DealAnimation names={names.map((n,i)=>n.trim()||`Player ${i+1}`)} avatars={avatars} onComplete={onDealComplete}/>}
@@ -1092,6 +1189,7 @@ export default function ThullaApp(){
         {showRules&&<RulesModal onClose={()=>setShowRules(false)}/>}
         {showSettings&&<SettingsModal sfx={sfx} setSfx={v=>{setSfxState(v);setSfxVol(v);}} music={music} setMusic={v=>{setMusicState(v);setMusicVol(v);}} musicOn={musicOn} setMusicOn={setMusicOn} theme={theme} setTheme={setTheme} onClose={()=>setShowSettings(false)}/>}
         {showAvatarPicker!==null&&<AvatarPicker current={avatars[showAvatarPicker]} onPick={pickAvatar} onClose={()=>setShowAvatarPicker(null)}/>}
+        {showAuth&&<AuthModal onClose={()=>setShowAuth(false)} onSignedIn={user=>{setAuthedUser(user);setShowAuth(false);}}/>}
       </div>
     </>
   );
